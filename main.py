@@ -1,11 +1,21 @@
-from utils import http
+from utils import parser, chart
+from utils.http import fetch_data
 
-url = "https://statistika.eestipank.ee/#/en/p/FINANTSSEKTOR/147/650" # reference page
-andmestik_ids=[770,802,2459] # stock_of_loans, turnover_of_loans, overdue_loans
+YEARS = 5
+OVERDUE_LOANS_ID = 2459
 
-start_date, end_date = http.get_period(3)
-data_url, cols_url = http.generate_api_url(andmestik_id=802, period_start=start_date, period_end=end_date)
-data_json = http.send_request(data_url)
-cols_json = http.send_request(cols_url)
-if data_json and cols_json:
-    print("Data received successfully")
+def main():
+    # Get data
+    data_json, cols_json = fetch_data(period_years=YEARS, andmestik_id=OVERDUE_LOANS_ID)
+    if not all([data_json, cols_json]):
+        return
+
+    # Parse data
+    title, df = parser.prepare_raw_dataframe(data_json, cols_json)
+    result = parser.return_result(df)
+
+    # Open chart
+    chart.show_overdue_loans_graph(result, title)
+
+if __name__ == '__main__':
+    main()
