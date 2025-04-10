@@ -2,6 +2,13 @@ import requests
 from datetime import date
 from urllib.parse import urljoin, urlencode
 
+def _get_years():
+    while True:
+        years = input("Enter number of years (1-20): ").strip()
+        if years.isdigit() and (1 <= int(years) <= 20):
+            return int(years)
+        print("Invalid input. Enter a number between 1 and 20.")
+
 def _get_period(period_years: int) -> tuple[str, str]:
     start_date = date(date.today().year - period_years, 1, 1).strftime('%d.%m.%Y')
     end_date = date.today().strftime('%d.%m.%Y')
@@ -33,7 +40,8 @@ def _send_request(url: str) -> dict:
     response.raise_for_status()
     return response.json()
 
-def fetch_data(period_years: int, andmestik_id: int):
+def fetch_data(andmestik_id: int):
+    period_years = _get_years()
     start_date, end_date = _get_period(period_years)
     data_url, cols_url = _generate_api_url(andmestik_id=andmestik_id, period_start=start_date, period_end=end_date)
     data_json = _send_request(data_url)
